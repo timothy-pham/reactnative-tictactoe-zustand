@@ -12,12 +12,15 @@ interface GameState {
   setCurrentMove: (
     nextCurrentMove: number | ((currentMove: number) => number),
   ) => void;
+  reset: () => void;
 }
+
+const SIZE = 10;
 
 const useGameStore = create<GameState>(
   combine(
     {
-      history: [Array(9).fill(null)],
+      history: [Array(SIZE * SIZE).fill(null)],
       currentMove: 0,
     },
     (set, get) => ({
@@ -36,6 +39,9 @@ const useGameStore = create<GameState>(
               ? nextCurrentMove(state.currentMove)
               : nextCurrentMove,
         }));
+      },
+      reset: () => {
+        set({history: [Array(SIZE * SIZE).fill(null)], currentMove: 0});
       },
     }),
   ),

@@ -1,5 +1,11 @@
 import React from 'react';
-import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+} from 'react-native';
 import Board from './Board';
 import useGameStore from './state';
 
@@ -8,6 +14,7 @@ const Game: React.FC = () => {
   const setHistory = useGameStore(state => state.setHistory);
   const currentMove = useGameStore(state => state.currentMove);
   const setCurrentMove = useGameStore(state => state.setCurrentMove);
+  const reset = useGameStore(state => state.reset);
   const xIsNext = currentMove % 2 === 0;
   const currentSquares = history[currentMove];
 
@@ -21,17 +28,14 @@ const Game: React.FC = () => {
     setCurrentMove(nextMove);
   };
 
+  console.log('History: ', history);
   return (
     <View style={styles.container}>
       <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay} />
-      <TouchableOpacity
-        onPress={() => {
-          jumpTo(0);
-          setHistory([Array(9).fill(null)]);
-        }}>
+      <TouchableOpacity onPress={reset}>
         <Text style={styles.resetBtn}>RESET GAME</Text>
       </TouchableOpacity>
-      <View style={styles.history}>
+      <ScrollView style={styles.history}>
         {history.map((_, historyIndex) => {
           const description =
             historyIndex > 0
@@ -48,7 +52,7 @@ const Game: React.FC = () => {
             </TouchableOpacity>
           );
         })}
-      </View>
+      </ScrollView>
     </View>
   );
 };

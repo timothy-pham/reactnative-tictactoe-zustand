@@ -1,6 +1,7 @@
 import {Dimensions, StyleSheet, Text, View} from 'react-native';
 import Square from './Square';
 import {calculateWinner, calculateTurns, calculateStatus} from './utils';
+import useGameStore from './state';
 
 interface BoardProps {
   xIsNext: boolean;
@@ -9,10 +10,12 @@ interface BoardProps {
 }
 
 const {width} = Dimensions.get('window');
-const BOARD_SIZE = width - 32;
-const SQUARE_SIZE = BOARD_SIZE / 3;
+const BOARD_SIZE = width - 10;
+const SIZE = 10;
+const SQUARE_SIZE = BOARD_SIZE / SIZE;
 
 const Board: React.FC<BoardProps> = ({xIsNext, squares, onPlay}) => {
+  const currentMove = useGameStore(state => state.currentMove);
   const {winner, line} = calculateWinner(squares);
   const turns = calculateTurns(squares);
   const player = xIsNext ? 'X' : 'O';
@@ -26,60 +29,59 @@ const Board: React.FC<BoardProps> = ({xIsNext, squares, onPlay}) => {
   };
 
   const renderWinningLine = () => {
-    if (line.length === 0) return null;
+    if (!line || line.length < 5) return null;
 
-    const [start, , end] = line;
-    const startRow = Math.floor(start / 3);
-    const startCol = start % 3;
-    const endRow = Math.floor(end / 3);
-    const endCol = end % 3;
+    const start = line[0];
+    const end = line[line.length - 1];
 
-    let lineStyle: any;
-    if (startRow === endRow) {
-      // Horizontal line
+    const startRow = Math.floor(start / SIZE);
+    const startCol = start % SIZE;
+    const endRow = Math.floor(end / SIZE);
+    const endCol = end % SIZE;
+
+    // Calculate distance
+    const dx = endCol - startCol;
+    const dy = endRow - startRow;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    const widthLine = (distance + 1) * (100 / SIZE) - 10;
+    let lineStyle: any = {
+      position: 'absolute',
+      backgroundColor: 'yellow',
+      height: 3, // Line thickness
+      width: `${widthLine}%`, // Extend through all winning cells
+    };
+    // Positioning based on the first cell in the line
+    const topOffset = (startRow + 0.5) * (100 / SIZE);
+    const leftOffset = (startCol + 0.5) * (100 / SIZE);
+    if (dy === 0) {
+      // Horizontal
       lineStyle = {
-        top: `${startRow * 33.33 + 16.67}%`,
+        ...lineStyle,
+        top: `${topOffset}%`,
         left: '0%',
         width: '100%',
-        height: 3,
       };
-    } else if (startCol === endCol) {
-      // Vertical line
+    } else if (dx === 0) {
+      // Vertical
       lineStyle = {
+        ...lineStyle,
         top: '0%',
-        left: `${startCol * 33.33 + 16.67}%`,
-        width: 3,
+        left: `${leftOffset}%`,
         height: '100%',
+        width: 3,
       };
-    } else if (start === 0 && end === 8) {
-      // Diagonal line from top-left to bottom-right
+    } else {
+      // Diagonal cases
+      const angle = Math.atan2(dy, dx) * (180 / Math.PI);
       lineStyle = {
-        top: '50%',
-        left: '30%',
-        width: BOARD_SIZE * Math.sqrt(2),
-        height: 3,
-        transform: [
-          {translateX: -BOARD_SIZE / 2},
-          {translateY: -1.5},
-          {rotate: '45deg'},
-        ],
-      };
-    } else if (start === 2 && end === 6) {
-      // Diagonal line from top-right to bottom-left
-      lineStyle = {
-        top: '50%',
-        left: '30%',
-        width: BOARD_SIZE * Math.sqrt(2),
-        height: 3,
-        transform: [
-          {translateX: -BOARD_SIZE / 2},
-          {translateY: -1.5},
-          {rotate: '-45deg'},
-        ],
+        ...lineStyle,
+        top: `${topOffset}%`,
+        left: `${leftOffset}%`,
+        transform: [{rotate: `${angle}deg`}],
+        transformOrigin: 'top left',
       };
     }
-
-    return <View style={[styles.line, lineStyle]} />;
+    return <View style={lineStyle} />;
   };
 
   return (
@@ -101,7 +103,7 @@ const Board: React.FC<BoardProps> = ({xIsNext, squares, onPlay}) => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 2,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -117,10 +119,6 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     width: BOARD_SIZE,
     height: BOARD_SIZE,
-  },
-  line: {
-    position: 'absolute',
-    backgroundColor: 'red',
   },
 });
 

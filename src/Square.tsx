@@ -13,7 +13,8 @@ interface SquareProps {
   onSquareClick: () => void;
 }
 const {width, height} = Dimensions.get('window');
-const squareSize = (width - 32) / 3;
+const SIZE = 10;
+const squareSize = (width - 10) / SIZE;
 const Square: React.FC<SquareProps> = ({value, onSquareClick}) => {
   return (
     <TouchableOpacity style={styles.square} onPress={onSquareClick}>
@@ -38,8 +39,8 @@ const styles = StyleSheet.create({
     height: squareSize,
   },
   icon: {
-    width: 50,
-    height: 50,
+    width: squareSize - 10,
+    height: squareSize - 10,
   },
 });
 
