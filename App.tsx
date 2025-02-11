@@ -1,10 +1,10 @@
 import React, {useEffect} from 'react';
 import {View, Text, SafeAreaView} from 'react-native';
-import Game from './Game';
+import Game from './src/Game';
 
 const App = () => {
   return (
-    <SafeAreaView style={{flex: 1}}>
+    <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>
       <Game />
     </SafeAreaView>
   );
